@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String             @id @default(uuid())
+  name              String
+  email             String             @unique
+  password          String
+  role              Role               @default(STUDENT)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  profilePicture    String?
+  bio               String?
+  courses           Course[]           @relation("InstructorCourses")
+  enrollments       Enrollment[]
+  reviews           Review[]
+  quizAttempts      QuizAttempt[]
+  lessonCompletions LessonCompletion[]
+  chatHistory       ChatMessage[]
+
+  @@map("users")
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  courses     Course[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Course {
+  id                String    @id @default(uuid())
+  title             String
+  description       String    @db.Text
+  price             Float
+  thumbnail         String
+  link              String?
+  level             Level     @default(BEGINNER)
+  whatYouWillLearn  String[]  @default([])
+  duration          String?
+
+  // --- THIS IS THE NEW FIELD ---
+  courseContent     String[]  @default([])
+
+  instructorId      String
+  instructor        User      @relation("InstructorCourses", fields: [instructorId], references: [id])
+  categoryId        String
+  category          Category  @relation(fields: [categoryId], references: [id])
+  
+  // These are kept for future expansion, as per the original schema
+  modules           Module[]
+  enrollments       Enrollment[]
+  reviews           Review[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("courses")
+}
+
+// All other models remain the same as your original, complete file
+model Module {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  order       Int
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  quizzes     Quiz[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("modules")
+}
+
+model Lesson {
+  id          String           @id @default(uuid())
+  title       String
+  content     String?
+  contentType ContentType
+  videoUrl    String?
+  fileUrl     String?
+  order       Int
+  moduleId    String
+  module      Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  completions LessonCompletion[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("lessons")
+}
+
+enum ContentType {
+  TEXT
+  VIDEO
+  PDF
+}
+
+model LessonCompletion {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+  @@map("lesson_completions")
+}
+
+model Enrollment {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId      String
+  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrolledAt    DateTime @default(now())
+  paymentId     String?
+  paymentStatus String   @default("PENDING")
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@map("reviews")
+}
+
+model Quiz {
+  id          String        @id @default(uuid())
+  title       String
+  description String?
+  moduleId    String
+  module      Module        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  attempts    QuizAttempt[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("quizzes")
+}
+
+model Question {
+  id         String           @id @default(uuid())
+  text       String
+  quizId     String
+  quiz       Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options    QuestionOption[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String   @id @default(uuid())
+  text       String
+  isCorrect  Boolean
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("question_options")
+}
+
+model QuizAttempt {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  score     Int
+  answers   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("quiz_attempts")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  amount        Float
+  currency      String   @default("INR")
+  paymentMethod String
+  paymentId     String   @unique
+  status        String
+  userId        String
+  courseId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("payments")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  response  String
+  context   String?
+  createdAt DateTime @default(now())
+
+  @@map("chat_messages")
+}
+
+model SiteContent {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_content")
+}
+
