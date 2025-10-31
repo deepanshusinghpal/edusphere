@@ -10,15 +10,23 @@ async function main() {
   // --- 1. Clear All Existing Data ---
   await prisma.enrollment.deleteMany().catch(e => console.log("Clearing enrollments..."));
   await prisma.review.deleteMany().catch(e => console.log("Clearing reviews..."));
+  await prisma.lessonCompletion.deleteMany().catch(e => console.log("Clearing lesson completions..."));
   await prisma.lesson.deleteMany().catch(e => console.log("Clearing lessons..."));
   await prisma.module.deleteMany().catch(e => console.log("Clearing modules..."));
+  await prisma.quizAttempt.deleteMany().catch(e => console.log("Clearing quiz attempts..."));
+  await prisma.questionOption.deleteMany().catch(e => console.log("Clearing question options..."));
+  await prisma.question.deleteMany().catch(e => console.log("Clearing questions..."));
+  await prisma.quiz.deleteMany().catch(e => console.log("Clearing quizzes..."));
+  await prisma.payment.deleteMany().catch(e => console.log("Clearing payments..."));
+  await prisma.chatMessage.deleteMany().catch(e => console.log("Clearing chat messages..."));
   await prisma.course.deleteMany().catch(e => console.log("Clearing courses..."));
   await prisma.siteContent.deleteMany().catch(e => console.log("Clearing site content..."));
   await prisma.category.deleteMany().catch(e => console.log("Clearing categories..."));
   await prisma.user.deleteMany().catch(e => console.log("Clearing users..."));
   console.log('Cleared existing data.');
 
-  // --- 2. Create Categories and Instructors (Your Code) ---
+
+  // --- 2. Create Categories and Instructors ---
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash('password123', salt);
 
@@ -33,7 +41,7 @@ async function main() {
     'Computer Science': await prisma.category.create({ data: { name: 'Computer Science', description: 'DBMS, OS, & Networks' } }),
   };
   console.log('Created custom categories.');
-  
+
   console.log('Creating instructors...');
   const instructors = {
     'Harry': await prisma.user.create({ data: { name: 'Harry', email: 'harry@example.com', password: hashedPassword, role: 'INSTRUCTOR' } }),
@@ -58,8 +66,9 @@ async function main() {
   };
   console.log('Created custom instructors.');
 
-  // --- 3. Create Your Custom Site Content (Your Code) ---
-  await prisma.siteContent.createMany({
+
+  // --- 3. Create Custom Site Content ---
+   await prisma.siteContent.createMany({
     data: [
       { key: 'hero_headline', value: 'Master In-Demand Tech Skills' },
       { key: 'hero_subtitle', value: 'Master Programming, Data Structures & Algorithms, Web Development, AI, and Cybersecurity with hands-on projects and industry-recognized certificates.' },
@@ -72,34 +81,38 @@ async function main() {
   });
   console.log('Created site content.');
 
-  // --- 4. Create Your Final Course Catalog (Your Code) ---
+
+  // --- 4. Create Final Course Catalog (Using EXACT filenames from your `ls` output) ---
   const coursesToCreate = [
-    { title: 'Introduction to Programming in C', category: 'Programming', level: Level.BEGINNER, instructor: 'Harry', link: 'https://youtube.com/playlist?list=PLu0W_9lII9aiXlHcLx-mDH1Qul38wD3aR&si=nzAHdM7SApiVmONM', thumbnail: 'https://media.istockphoto.com/id/484654121/photo/program-code.jpg?s=612x612&w=0&k=20&c=hwEnPRSjWHp-RKuwrdQPJ539E_DNjRMaYvkNSF4VsQM=' },
-    { title: 'Python for Beginners', category: 'Programming', level: Level.BEGINNER, instructor: 'Shradha Khapra', link: 'https://youtube.com/playlist?list=PLGjplNEQ1it8-0CmoljS5yeV-GlKSUEt0&si=2tg3LEdfuVndvRNv', thumbnail: 'https://media.istockphoto.com/id/1284922959/photo/python-inscription-against-laptop-and-code-background-learn-python-programming-language.jpg?s=612x612&w=0&k=20&c=D2LqATyObkpnTHtsin2eHs9ilGEr19Dshuo_1m9y2Tk=' },
-    { title: 'Object-Oriented Programming with C++', category: 'Programming', level: Level.INTERMEDIATE, instructor: 'Harry', link: 'https://youtube.com/playlist?list=PLu0W_9lII9agpFUAlPFe_VNSlXW5uE0YL&si=1LZIu0e6Nq0JW5IN', thumbnail: 'https://imgs.search.brave.com/kwXI1UKD0kwctttn2dZq6szgP14bweDaFI3CtJ9OrqA/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9jZG4u/c2xpZGVzaGFyZWNk/bi5jb20vc3NfdGh1/bWJuYWlscy9wcmVz/ZW50YXRpb25vb3At/MjIwNDEyMTIxNzQy/LXRodW1ibmFpbC5q/cGc_d2lkdGg9NTYw/JmZpdD1ib3VuZHM' },
-    { title: 'Career Essentials in Generative AI', category: 'Artificial Intelligence', level: Level.ADVANCED, instructor: 'Vilas Dhar', link: 'https://www.linkedin.com/learning/paths/career-essentials-in-generative-ai-by-microsoft-and-linkedin', thumbnail: 'https://media.licdn.com/dms/image/v2/D560DAQHETRsBvecPxQ/learning-public-banner-crop_300_1400/learning-public-banner-crop_300_1400/0/1716407671362?e=1761573600&v=beta&t=Hsbq2EaFgb0Wacp_pHBBguEyOJny7ElsUTzcM9NTsVc' },
-    { title: 'Data Structures and Algorithms', category: 'Computer Science', level: Level.INTERMEDIATE, instructor: 'Rohit Negi (Coder Army)', link: 'https://youtube.com/playlist?list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01&si=BTOEGqB9zuMvONI0', thumbnail: 'https://media.licdn.com/dms/image/v2/D560DAQHrmMscOqmJOw/learning-public-crop_144_256/learning-public-crop_144_256/0/1704914636714?e=1761573600&v=beta&t=F4Jh_PrYv29IB2C92kH9B4G4P9nchrRLv9Gze-gjG6g' },
-    { title: 'Develop Critical Thinking Skills', category: 'Computer Science', level: Level.ADVANCED, instructor: 'Alyssa Lowery', link: 'https://www.linkedin.com/learning/paths/develop-critical-thinking-decision-making-and-problem-solving-skills', thumbnail: 'https://media.licdn.com/dms/image/v2/C560DAQGAdZiEXB8vSw/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1619797496405?e=1761573600&v=beta&t=Gah6WFRWIvB1K7AfD669z66IITwb2rbGRH-pAVCe8YQ' },
-    { title: 'Database Management Systems', category: 'Computer Science', level: Level.INTERMEDIATE, instructor: 'Jenny', link: 'https://youtube.com/playlist?list=PLdo5W4Nhv31b33kF46f9aFjoJPOkdlsRc&si=xl42SMifO5UjJ8Qh', thumbnail: 'https://media.licdn.com/dms/image/v2/D4D0DAQFW4dpBsSvoow/learning-public-crop_144_256/learning-public-crop_144_256/0/1734136975257?e=1761573600&v=beta&t=wwS1CMHo4b6Q5z1nq0EstcK5_pQLSkXqkb5Ej1iB3S0' },
-    { title: 'Operating Systems Fundamentals', category: 'Computer Science', level: Level.INTERMEDIATE, instructor: 'Shujan Shome', link: 'https://youtube.com/playlist?list=PLc5rXIqickU2_VgSS5fwa0Di4V7vsaOlr&si=aeLxCPulB9Z3cQUq', thumbnail: 'https://media.licdn.com/dms/image/v2/D4D0DAQHQ7EN5C-Fokw/learning-public-crop_144_256/learning-public-crop_144_256/0/1718215039415?e=1761573600&v=beta&t=uk-2o2wu7vm_Xro-ZymhvSzgZZ_mVfwh2c5etECirRM' },
-    { title: 'Computer Networks', category: 'Computer Science', level: Level.INTERMEDIATE, instructor: 'Varun Singhla', link: 'https://youtube.com/playlist?list=PLxCzCOWd7aiGFBD2-2joCpWOLUrDLvVV_&si=nASJhLiv4fSnJFMp', thumbnail: 'https://media.licdn.com/dms/image/v2/D4E0DAQHYXSKchy5Idg/learning-public-crop_144_256/B4EZepIsG9HcAQ-/0/1750889317057?e=1761573600&v=beta&t=FcuhemvYJ4KW9MiOl3LpuiCDqh5EPkgOZ0rOuucBudk' },
-    { title: 'Front-End Web Development Career', category: 'Web Development', level: Level.BEGINNER, instructor: 'Jen Kramer', link: 'https://www.linkedin.com/learning/paths/explore-a-career-in-front-end-web-development', thumbnail: 'https://media.licdn.com/dms/image/v2/C4E0DAQFLAheIrgZu5g/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1582672203259?e=1761573600&v=beta&t=cfplz4BK5D97kPoClP4NpnYbi6lu57GU3qAZRG8Jy8g' },
-    { title: 'Node.js Web Development', category: 'Web Development', level: Level.INTERMEDIATE, instructor: 'Eve Porcello', link: 'https://www.linkedin.com/learning/paths/explore-web-development-with-node-js', thumbnail: 'https://media.licdn.com/dms/image/v2/C560DAQHctDFCWfBf5Q/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1654187660358?e=1761573600&v=beta&t=u2O561OlPd26s7QNcbou-zTy2XVwd3htgJ85H8vJ9X8' },
-    { title: 'The Complete Full-Stack Bootcamp', category: 'Web Development', level: Level.ADVANCED, instructor: 'Angela Yu', link: 'https://www.udemy.com/course/the-complete-web-development-bootcamp/', thumbnail: 'https://media.licdn.com/dms/image/v2/C560DAQEiXZnz0UZ2jA/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1622831765332?e=1761573600&v=beta&t=rmdSs4TnjWv2fIDKbqIfHw1GD_w5k0NiWfnbiKMp_nQ' },
-    { title: 'Full Stack with Flask', category: 'Web Development', level: Level.ADVANCED, instructor: 'Christian Hur', link: 'https://www.linkedin.com/learning/full-stack-web-development-with-flask', thumbnail: 'https://media.licdn.com/dms/image/v2/C4E0DAQF7J48SzeTWrA/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1569948140533?e=1761573600&v=beta&t=FghYKzDZUs0Tr-8DTP0_OQWzzaMbnWwXNmtbXLKaz2I' },
-    { title: 'Oracle Cloud Infrastructure Foundations', category: 'Cloud & DevOps', level: Level.BEGINNER, instructor: 'Oracle University', link: 'https://www.linkedin.com/learning/oracle-cloud-infrastructure-foundations-associate-january-2025', thumbnail: 'https://media.licdn.com/dms/image/v2/D4D0DAQGeUn9hVA0m5w/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1730409465423?e=1761573600&v=beta&t=hv1Ow4pTg26-BO10RuH-1R4jPJ3P51465g7RF2y7j0g' },
-    { title: 'Docker Foundations Certificate', category: 'Cloud & DevOps', level: Level.INTERMEDIATE, instructor: 'Carlos Nunez', link: 'https://www.linkedin.com/learning/paths/docker-foundations-professional-certificate', thumbnail: 'https://media.licdn.com/dms/image/v2/D4E0DAQHe-6aaMtHaHQ/learning-public-banner-crop_300_1400/learning-public-banner-crop_300_1400/0/1709917274918?e=1761573600&v=beta&t=l1lK22YQwiJKGUwgd49m14Xq-CwEN66bW6xlsykGZV4' },
-    { title: 'Getting Started with Kubernetes', category: 'Cloud & DevOps', level: Level.INTERMEDIATE, instructor: 'Kim Schlesinger', link: 'https://www.linkedin.com/learning/paths/getting-started-with-kubernetes', thumbnail: 'https://media.licdn.com/dms/image/v2/C4E0DAQHmMa6Y-wXQuw/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1582672201291?e=1761573600&v=beta&t=YzXMDL20T32hb_qhzdLwWA12MLEe1Uli4WdzFfE-v-I' },
-    { title: 'DevOps Foundation', category: 'Cloud & DevOps', level: Level.ADVANCED, instructor: 'Sanghapal S', link: 'https://www.linkedin.com/learning/devops-foundations-23454205', thumbnail: 'https://media.licdn.com/dms/image/v2/D560DAQEP0x26XHV_6Q/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1707936080464?e=1761573600&v=beta&t=aZSV9_fMFxMLJFHBhbhlW18qPHnO_VpZPX1bDZbSHLo' },
-    { title: 'Python Data Analysis', category: 'Data Science', level: Level.BEGINNER, instructor: 'Michele Vallisneri', link: 'https://www.linkedin.com/learning/python-data-analysis-24296803', thumbnail: 'https://media.licdn.com/dms/image/v2/D4D0DAQGSYAIAZElfSA/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1733965184177?e=1761573600&v=beta&t=elb-Dt5dgDvnYR1aJBy9HBqtCvtOjjRpCBR_JauEKgI' },
-    { title: 'Deep Learning with TensorFlow', category: 'Data Science', level: Level.ADVANCED, instructor: 'Isil Berkun', link: 'https://www.linkedin.com/learning/deep-learning-with-tensorflow-insights-and-innovations', thumbnail: 'https://media.licdn.com/dms/image/v2/D4D0DAQF3huhzfFmWxQ/learning-public-crop_675_1200/learning-public-crop_675_1200/0/1727298293042?e=1761573600&v=beta&t=lI1uKvXhaiGc0AF1PpJHxFe-aCNl547MyAlLDzyqFS8' },
-    { title: 'Cybersecurity Career Essentials', category: 'Cybersecurity', level: Level.BEGINNER, instructor: 'Bryan Li', link: 'https://www.linkedin.com/learning/paths/career-essentials-in-cybersecurity-by-microsoft-and-linkedin', thumbnail: 'https://media.licdn.com/dms/image/v2/D560DAQEx2JrDsQYXvA/learning-public-banner-crop_300_1400/learning-public-banner-crop_300_1400/0/1695663185308?e=1761573600&v=beta&t=oXFEr4loGSI_FLuQazwqQazj9lhMFJnrzIZ1nkJIK98' },
+    // --- Using local files you provided in `ls` ---
+    { title: 'Introduction to Programming in C', category: 'Programming', level: Level.BEGINNER, instructor: 'Harry', link: 'https://youtube.com/playlist?list=PLu0W_9lII9aiXlHcLx-mDH1Qul38wD3aR&si=nzAHdM7SApiVmONM', thumbnail: '/images/introduction-to-Programming-in-c.jpg' },
+    { title: 'Python for Beginners', category: 'Programming', level: Level.BEGINNER, instructor: 'Shradha Khapra', link: 'https://youtube.com/playlist?list=PLGjplNEQ1it8-0CmoljS5yeV-GlKSUEt0&si=2tg3LEdfuVndvRNv', thumbnail: '/images/python-for-beginners.jpg' },
+    { title: 'Object-Oriented Programming with C++', category: 'Programming', level: Level.INTERMEDIATE, instructor: 'Harry', link: 'https://youtube.com/playlist?list=PLu0W_9lII9agpFUAlPFe_VNSlXW5uE0YL&si=1LZIu0e6Nq0JW5IN', thumbnail: '/images/object-oriented-programming-with-c++.jpg' },
+    { title: 'Career Essentials in Generative AI', category: 'Artificial Intelligence', level: Level.ADVANCED, instructor: 'Vilas Dhar', link: 'https://www.linkedin.com/learning/paths/career-essentials-in-generative-ai-by-microsoft-and-linkedin', thumbnail: '/images/career-essentials-in-generative-ai.jpeg' },
+    { title: 'Data Structures and Algorithms', category: 'Computer Science', level: Level.INTERMEDIATE, instructor: 'Rohit Negi (Coder Army)', link: 'https://youtube.com/playlist?list=PLQEaRBV9gAFu4ovJ41PywklqI7IyXwr01&si=BTOEGqB9zuMvONI0', thumbnail: '/images/data-structures-and-algorithms.jpeg' },
+    { title: 'Develop Critical Thinking Skills', category: 'Computer Science', level: Level.ADVANCED, instructor: 'Alyssa Lowery', link: 'https://www.linkedin.com/learning/paths/develop-critical-thinking-decision-making-and-problem-solving-skills', thumbnail: '/images/develop-critical-thinking-skills.jpeg' },
+    { title: 'Database Management Systems', category: 'Computer Science', level: Level.INTERMEDIATE, instructor: 'Jenny', link: 'https://youtube.com/playlist?list=PLdo5W4Nhv31b33kF46f9aFjoJPOkdlsRc&si=xl42SMifO5UjJ8Qh', thumbnail: '/images/database-management-systems.jpeg' },
+    
+    // --- Assuming .jpeg for the rest of the files based on your `ls` output pattern ---
+    { title: 'Operating Systems Fundamentals', category: 'Computer Science', level: Level.INTERMEDIATE, instructor: 'Shujan Shome', link: 'https://youtube.com/playlist?list=PLc5rXIqickU2_VgSS5fwa0Di4V7vsaOlr&si=aeLxCPulB9Z3cQUq', thumbnail: '/images/operating-systems-fundamentals.jpeg' },
+    { title: 'Computer Networks', category: 'Computer Science', level: Level.INTERMEDIATE, instructor: 'Varun Singhla', link: 'https://youtube.com/playlist?list=PLxCzCOWd7aiGFBD2-2joCpWOLUrDLvVV_&si=nASJhLiv4fSnJFMp', thumbnail: '/images/computer-networks.jpeg' },
+    { title: 'Front-End Web Development Career', category: 'Web Development', level: Level.BEGINNER, instructor: 'Jen Kramer', link: 'https://www.linkedin.com/learning/paths/explore-a-career-in-front-end-web-development', thumbnail: '/images/front-end-web-development-career.jpeg' },
+    { title: 'Node.js Web Development', category: 'Web Development', level: Level.INTERMEDIATE, instructor: 'Eve Porcello', link: 'https://www.linkedin.com/learning/paths/explore-web-development-with-node-js', thumbnail: '/images/nodejs-web-development.jpeg' },
+    { title: 'The Complete Full-Stack Bootcamp', category: 'Web Development', level: Level.ADVANCED, instructor: 'Angela Yu', link: 'https://www.udemy.com/course/the-complete-web-development-bootcamp/', thumbnail: '/images/the-complete-full-stack-bootcamp.jpeg' },
+    { title: 'Full Stack with Flask', category: 'Web Development', level: Level.ADVANCED, instructor: 'Christian Hur', link: 'httpsD://www.linkedin.com/learning/full-stack-web-development-with-flask', thumbnail: '/images/full-stack-with-flask.jpeg' },
+    { title: 'Oracle Cloud Infrastructure Foundations', category: 'Cloud & DevOps', level: Level.BEGINNER, instructor: 'Oracle University', link: 'https: //www.linkedin.com/learning/oracle-cloud-infrastructure-foundations-associate-january-2025', thumbnail: '/images/oracle-cloud-infrastructure-foundations.jpeg' },
+    { title: 'Docker Foundations Certificate', category: 'Cloud & DevOps', level: Level.INTERMEDIATE, instructor: 'Carlos Nunez', link: 'https://www.linkedin.com/learning/paths/docker-foundations-professional-certificate', thumbnail: '/images/docker-foundations-certificate.jpeg' },
+    { title: 'Getting Started with Kubernetes', category: 'Cloud & DevOps', level: Level.INTERMEDIATE, instructor: 'Kim Schlesinger', link: 'httpsG://www.linkedin.com/learning/paths/getting-started-with-kubernetes', thumbnail: '/images/getting-started-with-kubernetes.jpeg' },
+    { title: 'DevOps Foundation', category: 'Cloud & DevOps', level: Level.ADVANCED, instructor: 'Sanghapal S', link: 'httpsG://www.linkedin.com/learning/devops-foundations-23454205', thumbnail: '/images/devops-foundation.jpeg' },
+    { title: 'Python Data Analysis', category: 'Data Science', level: Level.BEGINNER, instructor: 'Michele Vallisneri', link: 'httpsG://www.linkedin.com/learning/python-data-analysis-24296803', thumbnail: '/images/python-data-analysis.jpeg' },
+    { title: 'Deep Learning with TensorFlow', category: 'Data Science', level: Level.ADVANCED, instructor: 'Isil Berkun', link: 'httpsG://www.linkedin.com/learning/deep-learning-with-tensorflow-insights-and-innovations', thumbnail: '/images/deep-learning-with-tensorflow.jpeg' },
+    { title: 'Cybersecurity Career Essentials', category: 'Cybersecurity', level: Level.BEGINNER, instructor: 'Bryan Li', link: 'httpsG://www.linkedin.com/learning/paths/career-essentials-in-cybersecurity-by-microsoft-and-linkedin', thumbnail: '/images/cybersecurity-career-essentials.jpeg' },
   ];
-  
+
   console.log('Creating courses...');
   for (const courseData of coursesToCreate) {
     const content = courseContentData.find(c => c.title === courseData.title);
-    
+
     await prisma.course.create({
       data: {
         title: courseData.title,
@@ -107,16 +120,17 @@ async function main() {
         link: courseData.link,
         instructorId: instructors[courseData.instructor].id,
         categoryId: categories[courseData.category].id,
-        price: 0,
+        price: 0, // Assuming all are free for now
         description: content ? content.description : `A comprehensive course on ${courseData.title}.`,
         whatYouWillLearn: content ? content.whatYouWillLearn : [],
         duration: content ? content.duration : 'Self-paced',
         courseContent: content ? content.courseContent : [],
-        thumbnail: courseData.thumbnail || `https://placehold.co/600x400/343A40/FFFFFF?text=${encodeURIComponent(courseData.thumbText)}`,
+        thumbnail: courseData.thumbnail, // This now contains the correct local path
       },
     });
   }
-  console.log('Created final course catalog with dynamic content.');
+  console.log('Created final course catalog using all specified local image paths.');
+
 
   console.log('Seeding finished.');
 }
@@ -125,15 +139,12 @@ main().catch((e) => { console.error(e); process.exit(1); }).finally(async () => 
 
 
 
-// ### **Final Steps**
 
-// Now that your database blueprint and your seeding logic are perfectly in sync, you only need to run two final commands to bring your complete vision to life:
+// ```
 
-// 1.  **Run the Database Migration:** In your **backend terminal**, run this command one last time to add the new `courseContent` column to your database:
-//     ```bash
-//     npx prisma migrate dev --name add_course_content_list
-//     ```
-// 2.  **Rerun the Seed Script:** Once the migration is complete, run your seed command to populate the database with your final, rich course content:
+// **What to do now:**
+
+// 1.  **Re-run the seed script** in your `server` directory:
 //     ```bash
 //     npm run prisma:seed
     
