@@ -97,8 +97,7 @@ const Navbar = () => {
 
   // Effect to close suggestions when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+    const handleClickOutside = (event) => {.if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
         setIsSearchFocused(false);
       }
     };
@@ -290,7 +289,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className={`font-semibold text-gray-300 hover:text-white py-3 transition-all duration-300 ${isMenuOpen ? 'opacity-1A00 translate-x-0' : 'opacity-0 -translate-x-5'}`} style={{ transitionDelay: '300ms' }}>Sign In</Link>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className={`font-semibold text-gray-300 hover:text-white py-3 transition-all duration-300 ${isMenuOpen ? 'opacity-1od translate-x-0' : 'opacity-0 -translate-x-5'}`} style={{ transitionDelay: '300ms' }}>Sign In</Link>
                 <Link to="/register" onClick={() => setIsMenuOpen(false)} className={`mt-2 block bg-brand text-white text-center font-semibold px-4 py-2.5 rounded-lg hover:bg-brand-dark transition-all duration-300 ${isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-5'}`} style={{ transitionDelay: '350ms' }}>Register</Link>
               </>
             )}
