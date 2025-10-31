@@ -45,16 +45,15 @@ app.use((err, req, res, next) => {
   });
 });
 
-// --- VERCEL CHANGE ---
-// We no longer listen here. We just export the app.
-// Vercel will handle the 'listen' part.
-// ---------------------
-/*
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-*/
+// --- VERCEL/LOCAL FIX ---
+// This will start the server locally, but Vercel will ignore it.
+// We check if the VERCEL environment variable exists. If it does NOT, we start the server.
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running locally on http://localhost:${PORT}`);
+  });
+}
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
@@ -64,6 +63,6 @@ process.on('unhandledRejection', (err) => {
 });
 
 // --- VERCEL CHANGE ---
-// Export the app for Vercel
+// Export the app for Vercel to use as a serverless function
 module.exports = app;
 
