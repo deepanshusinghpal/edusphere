@@ -45,11 +45,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
+// --- VERCEL CHANGE ---
+// We no longer listen here. We just export the app.
+// Vercel will handle the 'listen' part.
+// ---------------------
+/*
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+*/
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
@@ -57,4 +62,8 @@ process.on('unhandledRejection', (err) => {
   console.log(err.name, err.message);
   process.exit(1);
 });
+
+// --- VERCEL CHANGE ---
+// Export the app for Vercel
+module.exports = app;
 
