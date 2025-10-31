@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, User, MessageSquare } from 'lucide-react';
 
 // Custom hook for observing elements
 const useIntersectionObserver = (options) => {
@@ -52,6 +52,15 @@ const AnimatedSection = ({ children, className }) => {
 
 const ContactPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false); // For staggering
+
+  useEffect(() => {
+    // Trigger animations
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 100); // Small delay
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -67,13 +76,13 @@ const ContactPage = () => {
 
   return (
     <div className="bg-gray-50">
-      {/* Header Section */}
-      <header className="bg-brand-dark/5 pt-28 pb-32 overflow-hidden relative">
+      {/* --- HEADER UPDATED to match Homepage Hero --- */}
+      <header className="bg-brand pt-28 pb-32 overflow-hidden relative z-10">
         <div className="absolute inset-0 bg-grid-white/[0.05] [mask-image:linear-gradient(to_bottom,white_50%,transparent_100%)] animate-grid-pulse"></div>
         <div className="container mx-auto px-6 text-center relative z-10">
           <div className="transition-all duration-1000 ease-out transform opacity-0 translate-y-8 animate-fade-in-up">
-            <h1 className="text-5xl font-extrabold text-ui-headings">Contact Us</h1>
-            <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto" style={{ animationDelay: '200ms' }}>
+            <h1 className="text-5xl font-extrabold text-white">Contact Us</h1>
+            <p className="mt-4 text-lg text-gray-200 max-w-3xl mx-auto" style={{ animationDelay: '200ms' }}>
               Have a question or feedback? We'd love to hear from you.
             </p>
           </div>
@@ -81,12 +90,12 @@ const ContactPage = () => {
       </header>
 
       {/* Main Content Section */}
-      <AnimatedSection className="container mx-auto px-6 py-24">
+      <AnimatedSection className="container mx-auto px-6 py-24 relative z-1">
         <div className="max-w-6xl mx-auto bg-white p-8 sm:p-12 rounded-2xl shadow-2xl grid md:grid-cols-2 gap-16">
             {/* Contact Info */}
             <div className="stagger-child">
-                <h2 className="text-3xl font-bold text-ui-headings mb-4">Get in Touch</h2>
-                <p className="text-gray-600 mb-8">
+                <h2 className="text-3xl font-bold text-edx-gray-dark mb-4">Get in Touch</h2>
+                <p className="text-gray-600 mb-8 text-lg leading-relaxed">
                     Fill out the form, and our team will get back to you within 24 hours. You can also reach us through the channels below.
                 </p>
                 <div className="space-y-6">
@@ -111,28 +120,37 @@ const ContactPage = () => {
                 </div>
             </div>
           
-            {/* Contact Form */}
+            {/* --- CONTACT FORM UPDATED --- */}
             <div className="stagger-child" style={{transitionDelay: '200ms'}}>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-800">Full Name</label>
-                  <div className="mt-1">
-                    <input type="text" id="name" name="name" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand transition-shadow" />
+                <div className={`stagger-child ${isVisible ? 'stagger-child-visible' : ''}`} style={{ transitionDelay: '300ms' }}>
+                  <label htmlFor="name" className="block text-sm font-medium text-edx-gray-dark">Full Name</label>
+                  <div className="mt-1 relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </span>
+                    <input type="text" id="name" name="name" required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm" />
                   </div>
                 </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-800">Email Address</label>
-                  <div className="mt-1">
-                    <input type="email" id="email" name="email" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand transition-shadow" />
+                <div className={`stagger-child ${isVisible ? 'stagger-child-visible' : ''}`} style={{ transitionDelay: '400ms' }}>
+                  <label htmlFor="email" className="block text-sm font-medium text-edx-gray-dark">Email Address</label>
+                  <div className="mt-1 relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </span>
+                    <input type="email" id="email" name="email" required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm" />
                   </div>
                 </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-800">Message</label>
-                  <div className="mt-1">
-                    <textarea id="message" name="message" rows="4" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand transition-shadow"></textarea>
+                <div className={`stagger-child ${isVisible ? 'stagger-child-visible' : ''}`} style={{ transitionDelay: '500ms' }}>
+                  <label htmlFor="message" className="block text-sm font-medium text-edx-gray-dark">Message</label>
+                  <div className="mt-1 relative">
+                     <span className="absolute top-3.5 left-0 flex items-center pl-3">
+                      <MessageSquare className="h-5 w-5 text-gray-400" />
+                    </span>
+                    <textarea id="message" name="message" rows="4" required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm"></textarea>
                   </div>
                 </div>
-                <div>
+                <div className={`stagger-child ${isVisible ? 'stagger-child-visible' : ''}`} style={{ transitionDelay: '600ms' }}>
                   <button type="submit" className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-base font-semibold text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-dark transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
                     <Send size={18} className="mr-2" />
                     Send Message
@@ -170,7 +188,7 @@ const ContactPage = () => {
         .animate-grid-pulse {
             animation: grid-pulse 8s ease-in-out infinite;
         }
-        .bg-grid-white\\/\\[0\\.05\\] {
+        .bg-grid-white\\[\\/0\\.05\\] {
             background-image: linear-gradient(white 1px, transparent 1px), linear-gradient(to right, white 1px, transparent 1px);
             background-size: 2rem 2rem;
         }
@@ -179,7 +197,8 @@ const ContactPage = () => {
             transform: translateY(30px) scale(0.98);
             transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        .animated-section.is-visible .stagger-child {
+        .animated-section.is-visible .stagger-child,
+        .stagger-child-visible { /* Added this for contact page form */
             opacity: 1;
             transform: translateY(0) scale(1);
         }
@@ -189,4 +208,3 @@ const ContactPage = () => {
 };
 
 export default ContactPage;
-

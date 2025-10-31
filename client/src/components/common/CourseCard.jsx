@@ -1,49 +1,52 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// The Star and PlayCircle icons are no longer needed and have been removed.
 
-const CourseCard = ({ course }) => (
-  // Main card container with enhanced shadow, border, and hover effects
-  <Link 
-    to={`/courses/${course.id}`} 
-    className="bg-white rounded-xl shadow-lg flex flex-col h-full transition-all duration-300 ease-in-out group hover:shadow-2xl hover:shadow-brand/20 hover:-translate-y-2"
-  >
-    {/* Image container with a subtle overlay effect */}
-    <div className="overflow-hidden relative">
-      <img 
-        src={course.thumbnail} 
-        alt={course.title} 
-        className="w-full h-44 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" 
-      />
-      {/* Darkening overlay that appears on hover */}
-      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300"></div>
-      
-      {/* Course level badge */}
-      <span className="absolute top-3 right-3 bg-white text-brand-dark text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
-        {course.level || 'All Levels'}
-      </span>
-    </div>
+const CourseCard = ({ course }) => {
+    // Helper to format the level text
+    const formatLevel = (level) => {
+        if (!level) return 'All Levels';
+        return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+    };
 
-    {/* Content section restored to original dark color scheme */}
-    <div className="p-4 flex flex-col flex-grow bg-brand text-white">
-      {/* Title section - grows to push footer down */}
-      <div className="flex-grow">
-        <h3 className="font-bold text-white transition-colors duration-300 text-base leading-snug line-clamp-2" style={{ minHeight: '2.5rem' }}>
-          {course.title}
-        </h3>
-      </div>
-      
-      {/* Footer section with instructor and rating info */}
-      <div className="mt-auto pt-4 border-t border-brand-dark">
-        <p className="text-sm font-semibold text-gray-400">
-          By {course.instructor.name}
-        </p>
-        
-        {/* The review section has been removed as requested */}
-      </div>
-    </div>
-  </Link>
-);
+    return (
+        <Link
+            to={`/courses/${course.id}`}
+            className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 group border border-gray-200 hover:shadow-brand/20 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col"
+        >
+            <div className="h-40 bg-gray-200 flex items-center justify-center overflow-hidden relative">
+                <img
+                    src={course.thumbnail}
+                    alt={`Thumbnail for ${course.title}`}
+                    className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                    // Fallback placeholder image
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = `https://placehold.co/600x400/e2e8f0/a0aec0?text=${encodeURIComponent(course.title.split(' ').slice(0,3).join(' '))}`;
+                    }}
+                />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300"></div>
+                <span className="absolute top-3 right-3 text-xs font-semibold bg-white text-brand-dark px-2.5 py-1 rounded-full shadow-md z-10">
+                    {formatLevel(course.level)}
+                </span>
+            </div>
+            <div className="p-5 flex flex-col flex-grow">
+                <h3 className="text-base font-bold text-edx-gray-dark mb-2 group-hover:text-brand transition-colors flex-grow line-clamp-2" style={{ minHeight: '2.5rem' }}>
+                    {course.title}
+                </h3>
+                <p className="text-sm text-edx-gray mb-4">
+                    {course.instructor.name}
+                </p>
+                <div className="mt-auto">
+                    <div
+                        className="w-full text-center block bg-brand text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 transform group-hover:scale-105 group-hover:bg-brand-dark shadow-md group-hover:shadow-lg group-hover:shadow-brand/30"
+                    >
+                        View Details
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+};
 
 export default CourseCard;
 

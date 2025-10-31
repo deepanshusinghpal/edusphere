@@ -1,41 +1,63 @@
-import React, { useState, useEffect } from 'react';
-// NOTE: Redux hooks and imports are temporarily commented out to resolve 
-// dependency errors in this sandboxed environment. Your Redux logic is preserved.
-// You can uncomment these lines when you place the code back in your project.
-// import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, User, ChevronDown, BookOpen, ArrowRight } from 'lucide-react';
-// import { logout, reset } from '../../store/slices/authSlice';
-// import { fetchCategories } from '../../store/slices/categorySlice';
+import {
+  Search,
+  Menu,
+  X,
+  User,
+  ChevronDown,
+  BookOpen,
+  ArrowRight,
+  BrainCircuit,
+  Code,
+  BarChart,
+  Palette,
+  Laptop,
+  Cloud,
+  ShieldCheck
+} from 'lucide-react';
+// --- FIX: Using correct relative paths with .js extension ---
+import { logout, reset } from '../../store/slices/authSlice.js';
+import { fetchCategories } from '../../store/slices/categorySlice.js';
+import { fetchCourses } from '../../store/slices/courseSlice.js';
+
+// Define categories with icons, matching the homepage
+const categoriesWithIcons = [
+  { icon: <Code size={20} className="text-brand" />, name: 'Programming' },
+  { icon: <BrainCircuit size={20} className="text-brand" />, name: 'Data Science' },
+  { icon: <Laptop size={20} className="text-brand" />, name: 'Artificial Intelligence' },
+  { icon: <Palette size={20} className="text-brand" />, name: 'Web Development' },
+  { icon: <Cloud size={20} className="text-brand" />, name: 'Cloud & DevOps' },
+  { icon: <ShieldCheck size={20} className="text-brand" />, name: 'Cybersecurity' },
+  { icon: <BarChart size={20} className="text-brand" />, name: 'Computer Science' },
+];
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchContainerRef = useRef(null);
   
   const navigate = useNavigate();
-  // const dispatch = useDispatch(); // Temporarily removed
+  const dispatch = useDispatch();
 
-  // --- Mock Data & Local State (to replace Redux) ---
-  // To view guest links, set the initial state to `useState(null)`
-  const [user, setUser] = useState({ name: 'Jane Doe' }); 
-  const [categories] = useState([
-      { id: 1, name: 'Web Development' },
-      { id: 2, name: 'Data Science & ML' },
-      { id: 3, name: 'Mobile Development' },
-      { id: 4, name: 'UI/UX Design' },
-      { id: 5, name: 'Digital Marketing' },
-      { id: 6, name: 'Business & Finance' },
-      { id: 7, name: 'Cybersecurity' },
-      { id: 8, name: 'Cloud & DevOps' }
-  ]);
-  // const { user } = useSelector((state) => state.auth); // Replaced with local state
-  // const { categories } = useSelector((state) => state.categories); // Replaced with local state
+  const { user } = useSelector((state) => state.auth);
+  const { categories: categoriesFromStore } = useSelector((state) => state.categories);
+  const { courses } = useSelector((state) => state.courses);
 
-  // This useEffect is no longer needed with mock data
-  // useEffect(() => {
-  //   dispatch(fetchCategories());
-  // }, [dispatch]);
+  useEffect(() => {
+    if (!categoriesFromStore || categoriesFromStore.length === 0) {
+        dispatch(fetchCategories());
+    }
+    if (!courses || courses.length === 0) {
+        dispatch(fetchCourses());
+    }
+  }, [dispatch, categoriesFromStore, courses]);
 
   // Effect for sticky header
   useEffect(() => {
@@ -46,9 +68,9 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
-  // Effect to lock body scroll when mobile menu is open
+  // Effect to lock body scroll when mobile menu or desktop dropdown is open
   useEffect(() => {
-    if (isMenuOpen) {
+    if (isMenuOpen || isDropdownOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -56,23 +78,62 @@ const Navbar = () => {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isDropdownOpen]);
+
+  // Effect to update search suggestions
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setSuggestions([]);
+      return;
+    }
+    
+    if (courses.length > 0) {
+      const matchingCourses = courses.filter(course => 
+        course.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSuggestions(matchingCourses.slice(0, 5)); // Show top 5 matches
+    }
+  }, [searchTerm, courses]);
+
+  // Effect to close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   const handleLogout = () => {
-    // dispatch(logout()); // Restore in your project
-    // dispatch(reset()); // Restore in your project
-    setUser(null); // Simulate logout
+    dispatch(logout());
+    dispatch(reset());
     setIsMenuOpen(false);
     navigate('/');
   };
   
+  // Updated search submit handler
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/courses?search=${encodeURIComponent(searchTerm.trim())}`);
       setSearchTerm('');
-      setIsMenuOpen(false);
+      setSuggestions([]);
+      setIsSearchFocused(false);
+      e.target.querySelector('input')?.blur(); // Blur input on submit
     }
+  };
+  
+  // Handler for clicking a suggestion
+  const handleSuggestionClick = (courseId) => {
+    navigate(`/courses/${courseId}`);
+    setSearchTerm('');
+    setSuggestions([]);
+    setIsSearchFocused(false);
   };
   
   const authLinks = (
@@ -105,67 +166,109 @@ const Navbar = () => {
   );
 
   return (
-    <header className={`bg-brand-dark sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'shadow-2xl bg-opacity-95 backdrop-blur-sm border-b border-brand' : 'border-b border-transparent'}`}>
+    <header className={`bg-brand-dark sticky top-0 z-[100] transition-all duration-300 ${isScrolled ? 'shadow-2xl border-b border-brand' : 'border-b border-transparent'}`}>
       <nav className="container mx-auto px-6 h-20 flex justify-between items-center">
         <div className="flex items-center space-x-8">
           <Link to="/" className="text-3xl font-extrabold text-white tracking-tight transition-transform duration-300 hover:scale-105">
             edusphere
           </Link>
-          <div className="hidden lg:flex items-center relative group">
+          <div 
+            className="hidden lg:flex items-center relative group"
+            onMouseEnter={() => setIsDropdownOpen(true)}
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
             <button className="flex items-center text-sm font-semibold text-gray-300 hover:text-white transition-colors">
               <span>Courses</span>
-              <ChevronDown className="w-5 h-5 ml-1 transition-transform duration-300 group-hover:rotate-180" />
+              <ChevronDown className="w-5 h-5 ml-1 transition-transform duration-300 group-hover:rotate-180 group-focus-within:rotate-180" />
             </button>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[34rem] bg-white rounded-lg shadow-2xl opacity-0 group-hover:opacity-100 transform group-hover:translate-y-0 -translate-y-4 transition-all duration-300 ease-in-out invisible group-hover:visible z-10 overflow-hidden">
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-ui-headings mb-4 px-2">Explore Our Top Categories</h3>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-                  {categories.slice(0, 8).map((category, index) => (
+            
+            <div className="absolute top-full left-0 mt-4 w-72 bg-white rounded-lg shadow-2xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transform group-hover:translate-y-0 group-focus-within:translate-y-0 -translate-y-4 transition-all duration-300 ease-in-out invisible group-hover:visible group-focus-within:visible z-10 overflow-hidden">
+              <div className="p-4 max-h-[70vh] overflow-y-auto">
+                <h3 className="text-sm font-bold text-edx-gray-dark mb-3 px-3">Top Categories</h3>
+                <div className="grid grid-cols-1 gap-y-1">
+                  {categoriesWithIcons.map((category, index) => (
                     <Link 
-                      key={category.id} 
+                      key={category.name} 
                       to={`/courses?subject=${encodeURIComponent(category.name)}`}
-                      className="group/item flex items-center p-2 text-sm text-gray-700 rounded-md hover:bg-gray-100 hover:text-brand transition-all duration-300 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
+                      className="group/item flex items-center p-3 text-sm text-edx-gray rounded-lg hover:bg-gray-100 hover:text-brand transition-all duration-300 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 -translate-x-4 group-hover:translate-x-0 group-focus-within:translate-x-0"
                       style={{ transitionDelay: `${index * 50}ms` }}
+                      onClick={(e) => {
+                        e.currentTarget.closest('.group')?.blur();
+                        setIsDropdownOpen(false);
+                      }}
                     >
-                      <BookOpen size={16} className="mr-3 text-gray-400 group-hover/item:text-brand transition-colors" />
-                      <span className="transform group-hover/item:translate-x-1 transition-transform duration-300">{category.name}</span>
+                      <div className="mr-4">{category.icon}</div>
+                      <span className="font-semibold text-edx-gray-dark group-hover/item:text-brand transition-colors">{category.name}</span>
                     </Link>
                   ))}
                 </div>
               </div>
               <div className="bg-gray-50 border-t border-gray-100 p-4 text-center">
-                  <Link to="/courses" className="text-sm font-semibold text-brand hover:text-brand-dark transition-colors duration-200 group/link flex items-center justify-center">
+                  <Link 
+                    to="/courses" 
+                    className="text-sm font-semibold text-brand hover:text-brand-dark transition-colors duration-200 group/link flex items-center justify-center"
+                    onClick={(e) => {
+                      e.currentTarget.closest('.group')?.blur();
+                      setIsDropdownOpen(false);
+                    }}
+                  >
                     View All Courses <ArrowRight size={16} className="ml-1 transition-transform duration-300 group-hover/link:translate-x-1" />
                   </Link>
               </div>
             </div>
           </div>
         </div>
-        <div className="hidden md:flex flex-grow max-w-md mx-8">
-          <form onSubmit={handleSearch} className="relative w-full group">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-4">
-              <Search className="h-5 w-5 text-gray-500 transition-colors group-focus-within:text-brand" />
+        
+        {/* --- SEARCH BAR WITH SUGGESTIONS (FIXED) --- */}
+        <div className="hidden md:flex flex-grow max-w-md mx-8" ref={searchContainerRef}>
+          <form onSubmit={handleSearch} className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-4 z-10">
+              <Search className="h-5 w-5 text-gray-500" />
             </span>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
               placeholder="What do you want to learn?"
-              className="w-full pl-12 pr-4 py-2.5 border bg-brand border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-light transition-all duration-300 shadow-inner"
+              // --- FIX: Add rounded-t-lg and remove rounded-b-lg if suggestions are open ---
+              className={`relative w-full pl-12 pr-4 py-2.5 border bg-brand border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-brand-light transition-all duration-300 shadow-inner placeholder-gray-400 ${isSearchFocused && suggestions.length > 0 ? 'rounded-t-lg' : 'rounded-lg'}`}
+              autoComplete="off"
             />
+            {/* --- FIX: Suggestions Dropdown (attached) --- */}
+            {isSearchFocused && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-b-lg overflow-hidden z-20 border-x border-b border-gray-200">
+                <ul className="divide-y divide-gray-100">
+                  {suggestions.map(course => (
+                    <li key={course.id}>
+                      <button
+                        type="button" // Important: type=button to prevent form submit
+                        onClick={() => handleSuggestionClick(course.id)}
+                        className="block w-full text-left px-4 py-3 text-sm text-edx-gray-dark hover:bg-gray-100 transition-colors"
+                      >
+                        {course.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </form>
         </div>
+        
         <div className="hidden lg:flex items-center">
           {user ? authLinks : guestLinks}
         </div>
+        
         <div className="lg:hidden">
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white z-[60] relative" aria-label="Open menu">
-              <span className={`transition-transform duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${isMenuOpen ? 'rotate-45' : 'rotate-0'}`}><Menu size={24} /></span>
-              <span className={`transition-transform duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${isMenuOpen ? 'rotate-0' : '-rotate-45'}`}><X size={24} /></span>
+              <span className={`transition-transform duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${isMenuOpen ? 'opacity-0 rotate-45' : 'opacity-100 rotate-0'}`}><Menu size={24} /></span>
+              <span className={`transition-transform duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${isMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-45'}`}><X size={24} /></span>
           </button>
         </div>
       </nav>
-      {/* Mobile Menu */}
+
+      {/* --- Mobile Menu --- */}
       <div className={`lg:hidden fixed top-0 left-0 w-full h-screen bg-brand-dark pt-20 transition-transform duration-500 ease-in-out ${isMenuOpen ? 'transform translate-x-0' : 'transform translate-x-full'}`}>
         <div className="flex flex-col space-y-2 p-6">
             <form onSubmit={handleSearch} className={`relative w-full mb-4 transition-all duration-300 ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'}`} style={{ transitionDelay: '200ms' }}>
@@ -175,7 +278,7 @@ const Navbar = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="What do you want to learn?" 
-                className="w-full pl-12 pr-4 py-2.5 border rounded-lg bg-brand border-gray-600 text-white" />
+                className="w-full pl-12 pr-4 py-2.5 border rounded-lg bg-brand border-gray-600 text-white placeholder-gray-400" />
             </form>
             <div className="border-t border-gray-700 my-4"></div>
             {user ? (
