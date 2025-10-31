@@ -17,10 +17,10 @@ import {
   Cloud,
   ShieldCheck
 } from 'lucide-react';
-// --- FIX: Using correct relative paths with .js extension ---
-import { logout, reset } from '../../store/slices/authSlice.js';
-import { fetchCategories } from '../../store/slices/categorySlice.js';
-import { fetchCourses } from '../../store/slices/courseSlice.js';
+// --- THIS IS THE FIX: Removed .js extensions ---
+import { logout, reset } from '../../store/slices/authSlice';
+import { fetchCategories } from '../../store/slices/categorySlice';
+import { fetchCourses } from '../../store/slices/courseSlice';
 
 // Define categories with icons, matching the homepage
 const categoriesWithIcons = [
@@ -290,7 +290,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className={`font-semibold text-gray-300 hover:text-white py-3 transition-all duration-300 ${isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-5'}`} style={{ transitionDelay: '300ms' }}>Sign In</Link>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className={`font-semibold text-gray-300 hover:text-white py-3 transition-all duration-300 ${isMenuOpen ? 'opacity-1A00 translate-x-0' : 'opacity-0 -translate-x-5'}`} style={{ transitionDelay: '300ms' }}>Sign In</Link>
                 <Link to="/register" onClick={() => setIsMenuOpen(false)} className={`mt-2 block bg-brand text-white text-center font-semibold px-4 py-2.5 rounded-lg hover:bg-brand-dark transition-all duration-300 ${isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-5'}`} style={{ transitionDelay: '350ms' }}>Register</Link>
               </>
             )}

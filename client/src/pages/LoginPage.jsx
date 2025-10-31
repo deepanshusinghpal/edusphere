@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-// --- FIX: Adding .js/.jsx extensions to imports ---
-import { login, reset } from '../store/slices/authSlice.js';
-import AuthLayout from '../components/auth/AuthLayout.jsx';
+// --- THIS IS THE FIX: Removed .js/.jsx extensions ---
+import { login, reset } from '../store/slices/authSlice';
+import AuthLayout from '../components/auth/AuthLayout';
 import { Loader2, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 // --- REMOVED SocialIcon component ---

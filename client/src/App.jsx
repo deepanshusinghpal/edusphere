@@ -17,9 +17,9 @@ import StudentDashboard from './pages/StudentDashboard';
 import InstructorDashboard from './pages/InstructorDashboard';
 import LearningPage from './pages/LearningPage';
 import EditCoursePage from './pages/EditCoursePage';
-// --- THIS IS THE CRITICAL FIX: Import from .jsx files ---
-import AboutPage from './pages/AboutPage.jsx';
-import ContactPage from './pages/ContactPage.jsx';
+// --- THIS IS THE FIX: Removed .jsx extensions ---
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 
 // Protected Route
 import ProtectedRoute from './components/common/ProtectedRoute';
