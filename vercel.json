@@ -21,58 +21,5 @@
     }
   ]
 }
-```
-*(This version removes the `options` block that was causing the error.)*
 
----
-
-### 2. How to Proceed (Updated Steps)
-
-Now that the file is fixed, let's push this fix to GitHub and re-deploy.
-
-#### **Task 1: Push the Fix to GitHub**
-
-You are already in your main project folder `edusphere-project (main)`.
-
-1.  **Add the file change:**
-    ```bash
-    git add vercel.json
-    ```
-2.  **Commit the fix:**
-    ```bash
-    git commit -m "FIX: Simplify vercel.json for Vercel deployment"
-    ```
-3.  **Push to GitHub:**
-    ```bash
-    git push
-    ```
-
-#### **Task 2: Re-Deploy on Vercel (The Clean Way)**
-
-Let's delete the broken project on Vercel and import the new, fixed version.
-
-1.  **Delete Old Project:**
-    * Go to your Vercel Dashboard.
-    * Click on the `edusphere` project.
-    * Go to the **"Settings"** tab.
-    * Scroll to the very bottom and **"Delete Project"**.
-
-2.  **Re-Import Project:**
-    * Go back to your dashboard, click **"Add New..."** -> **"Project"**.
-    * Import your `edusphere-project` from GitHub again.
-
-3.  **Configure Project (New Instructions):**
-    You are now on the "Configure Project" screen.
-
-    * **Root Directory:**
-        * Click "Edit" and set this to **`client`**. (This is the same as before).
-        * The "Framework Preset" will become **"Vite"**. This is correct.
-
-    * **Build and Output Settings:**
-        * Click to expand this section.
-        * Find the **"Install Command"** field. 
-        * In the text box, paste this command:
-            ```
-            npm install --legacy-peer-deps
-            
 
