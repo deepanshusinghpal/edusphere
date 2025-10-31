@@ -18,23 +18,14 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
       "src": "/api/v1/(.*)",
       "dest": "server/index.js"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "client/dist/assets/$1"
-    },
-    {
-      "src": "/images/(.*)",
-      "dest": "client/dist/images/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "client/dist/index.html"
+      "dest": "/index.html"
     }
   ]
 }
-
