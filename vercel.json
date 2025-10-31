@@ -3,11 +3,19 @@
   "builds": [
     {
       "src": "client/package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "options": {
+        "installCommand": "npm install --prefix client --legacy-peer-deps",
+        "buildCommand": "npm run build --prefix client"
+      }
     },
     {
-      "src": "server/index.js",
-      "use": "@vercel/node"
+      "src": "server/package.json",
+      "use": "@vercel/node",
+      "options": {
+        "installCommand": "npm install --prefix server",
+        "buildCommand": "npm run vercel-build --prefix server"
+      }
     }
   ],
   "routes": [
@@ -17,7 +25,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "client/$1"
+      "dest": "client/dist/$1"
     }
   ]
 }
