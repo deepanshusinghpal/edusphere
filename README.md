@@ -2,6 +2,13 @@
 
 EduSphere is a comprehensive e-learning platform built with the PERN stack (PostgreSQL, Express.js, React, Node.js). It provides a robust system for course creation, management, and consumption with features like user authentication, course enrollment, payment processing, and an AI-powered chatbot.
 
+---
+
+### **[View Live Demo](https://edusphere-x7o2.vercel.app/)** 🌐
+
+---
+
+
 ## Features
 
 ### Core Features (MVP)
