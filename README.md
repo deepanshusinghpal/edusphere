@@ -4,7 +4,7 @@ EduSphere is a comprehensive e-learning platform built with the PERN stack (Post
 
 ---
 
-### **[View Live Demo](https://edusphere-x7o2.vercel.app/)** 🌐
+<h3><a href="https://edusphere-x7o2.vercel.app/" target="_blank">🌐 View Live Demo</a></h3>
 
 ---
 
