@@ -253,3 +253,14 @@ model SiteContent {
   @@map("site_content")
 }
 
+// This is the new model for Our contact form
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("contact_messages")
+}

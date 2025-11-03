@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle, User, MessageSquare } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, User, MessageSquare, Loader2 } from 'lucide-react';
+import axios from 'axios'; // <-- Import axios
 
-// Custom hook for observing elements
+// (This custom hook for observing elements remains unchanged)
 const useIntersectionObserver = (options) => {
     const [elements, setElements] = useState([]);
     const [entries, setEntries] = useState([]);
@@ -51,32 +52,55 @@ const AnimatedSection = ({ children, className }) => {
 
 
 const ContactPage = () => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  // --- NEW: State for form data, loading, and success/error ---
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [formStatus, setFormStatus] = useState({ submitted: false, error: '' });
   const [isVisible, setIsVisible] = useState(false); // For staggering
 
+  const { name, email, message } = formData;
+
   useEffect(() => {
-    // Trigger animations
     const timer = setTimeout(() => {
       setIsVisible(true);
-    }, 100); // Small delay
+    }, 100);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSubmit = (e) => {
+  // --- NEW: Handle form input changes ---
+  const onChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // --- UPDATED: HandleSubmit function ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, you'd handle form submission here (e.g., API call)
-    setIsSubmitted(true);
-    e.target.reset(); // Clear form fields
+    setIsLoading(true);
+    setFormStatus({ submitted: false, error: '' });
     
-    // Hide the success message after a few seconds
-    setTimeout(() => {
-        setIsSubmitted(false);
-    }, 5000);
+    try {
+      // This is the new API call
+      await axios.post(`${import.meta.env.VITE_API_URL}/contact`, formData);
+      
+      setFormStatus({ submitted: true, error: '' });
+      setFormData({ name: '', email: '', message: '' }); // Clear form
+      
+      setTimeout(() => {
+          setFormStatus({ submitted: false, error: '' });
+      }, 5000);
+
+    } catch (err) {
+      // Handle errors from the server (like validation)
+      const errorMsg = err.response?.data?.errors?.[0]?.msg || 'Could not send message. Please try again.';
+      setFormStatus({ submitted: false, error: errorMsg });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="bg-gray-50">
-      {/* --- HEADER UPDATED to match Homepage Hero --- */}
+      {/* (Header remains the same) */}
       <header className="bg-brand pt-28 pb-32 overflow-hidden relative z-10">
         <div className="absolute inset-0 bg-grid-white/[0.05] [mask-image:linear-gradient(to_bottom,white_50%,transparent_100%)] animate-grid-pulse"></div>
         <div className="container mx-auto px-6 text-center relative z-10">
@@ -92,7 +116,7 @@ const ContactPage = () => {
       {/* Main Content Section */}
       <AnimatedSection className="container mx-auto px-6 py-24 relative z-1">
         <div className="max-w-6xl mx-auto bg-white p-8 sm:p-12 rounded-2xl shadow-2xl grid md:grid-cols-2 gap-16">
-            {/* Contact Info */}
+            {/* Contact Info (remains the same) */}
             <div className="stagger-child">
                 <h2 className="text-3xl font-bold text-edx-gray-dark mb-4">Get in Touch</h2>
                 <p className="text-gray-600 mb-8 text-lg leading-relaxed">
@@ -129,7 +153,7 @@ const ContactPage = () => {
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                       <User className="h-5 w-5 text-gray-400" />
                     </span>
-                    <input type="text" id="name" name="name" required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm" />
+                    <input type="text" id="name" name="name" value={name} onChange={onChange} required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm" />
                   </div>
                 </div>
                 <div className={`stagger-child ${isVisible ? 'stagger-child-visible' : ''}`} style={{ transitionDelay: '400ms' }}>
@@ -138,7 +162,7 @@ const ContactPage = () => {
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                       <Mail className="h-5 w-5 text-gray-400" />
                     </span>
-                    <input type="email" id="email" name="email" required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm" />
+                    <input type="email" id="email" name="email" value={email} onChange={onChange} required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm" />
                   </div>
                 </div>
                 <div className={`stagger-child ${isVisible ? 'stagger-child-visible' : ''}`} style={{ transitionDelay: '500ms' }}>
@@ -147,26 +171,31 @@ const ContactPage = () => {
                      <span className="absolute top-3.5 left-0 flex items-center pl-3">
                       <MessageSquare className="h-5 w-5 text-gray-400" />
                     </span>
-                    <textarea id="message" name="message" rows="4" required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm"></textarea>
+                    <textarea id="message" name="message" rows="4" value={message} onChange={onChange} required className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand shadow-sm"></textarea>
                   </div>
                 </div>
                 <div className={`stagger-child ${isVisible ? 'stagger-child-visible' : ''}`} style={{ transitionDelay: '600ms' }}>
-                  <button type="submit" className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-base font-semibold text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-dark transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
-                    <Send size={18} className="mr-2" />
-                    Send Message
+                  <button type="submit" disabled={isLoading} className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-base font-semibold text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-dark transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 disabled:bg-brand/50">
+                    {isLoading ? <Loader2 size={20} className="animate-spin" /> : <><Send size={18} className="mr-2" /> Send Message</>}
                   </button>
                 </div>
               </form>
-               {isSubmitted && (
+               {formStatus.submitted && (
                     <div className="mt-6 flex items-center bg-green-100 text-green-800 p-4 rounded-lg animate-fade-in-up">
                         <CheckCircle size={20} className="mr-3" />
                         <p className="text-sm font-medium">Thank you for your message! We will get back to you shortly.</p>
+                    </div>
+                )}
+                {formStatus.error && (
+                    <div className="mt-6 flex items-center bg-red-100 text-red-800 p-4 rounded-lg animate-fade-in-up">
+                        <p className="text-sm font-medium">{formStatus.error}</p>
                     </div>
                 )}
             </div>
         </div>
       </AnimatedSection>
 
+       {/* (Styling block remains the same) */}
        <style jsx global>{`
         @keyframes fade-in-up {
             from {
